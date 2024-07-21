@@ -1,0 +1,42 @@
+[package]
+name = "life"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# bevy = { version = "0.14.0", features = ["dynamic_linking"] }
+bevy = { version = "0.14.0", default-features = false, features = [
+    "bevy_asset",
+    # "bevy_audio",
+    # "bevy_state",
+    # "bevy_gilrs",
+    # "bevy_scene",
+    "bevy_winit",
+    "bevy_core_pipeline",
+    # "bevy_pbr",
+    # "bevy_gltf",
+    "bevy_render",
+    # "bevy_sprite",
+    "bevy_text",
+    "bevy_ui",
+    "multi_threaded",
+    "png",
+    # "hdr",
+    # "vorbis",
+    "x11",
+    "bevy_gizmos",
+    # "tonemapping_luts",
+    "default_font",
+    "webgl2",
+    # "bevy_debug_stepping ",
+] }
+bevy_framepace = "0.17.1"
+rand = "0.8.5"
+
+[target.wasm32-unknown-unknown]
+[profile.wasm-release]
+inherits = "release"
+
+opt-level = "z"
+# lto = "fat"
+codegen-units = 1
