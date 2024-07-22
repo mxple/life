@@ -1,15 +1,17 @@
-use std::{mem, thread::sleep, time::Duration};
+use std::mem;
 
 use bevy::{
     asset::AssetMetaCheck,
     color::palettes::css::WHITE,
     core::FrameCount,
+    core_pipeline::tonemapping::Tonemapping,
     diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
+    math::{vec3, vec4},
     prelude::*,
     render::{
         mesh::MeshVertexBufferLayoutRef,
         render_resource::{
-            AsBindGroup, Extent3d, RenderPipelineDescriptor, ShaderRef,
+            AsBindGroup, BlendState, Extent3d, RenderPipelineDescriptor, ShaderRef,
             SpecializedMeshPipelineError, TextureDescriptor, TextureDimension, TextureFormat,
             TextureUsages,
         },
@@ -67,7 +69,6 @@ fn setup(
     mut meshes: ResMut<Assets<Mesh>>,
     mut images: ResMut<Assets<Image>>,
     mut life_materials: ResMut<Assets<LifeMaterial>>,
-    // mut draw_materials: ResMut<Assets<DrawMaterial>>,
     mut render_materials: ResMut<Assets<RenderMaterial>>,
 ) {
     let size = Extent3d {
@@ -83,7 +84,7 @@ fn setup(
             label: None,
             size,
             dimension: TextureDimension::D2,
-            format: TextureFormat::R8Unorm,
+            format: TextureFormat::Rgba8UnormSrgb,
             mip_level_count: 1,
             sample_count: 1,
             usage: TextureUsages::TEXTURE_BINDING
@@ -91,7 +92,7 @@ fn setup(
                 | TextureUsages::RENDER_ATTACHMENT,
             view_formats: &[],
         },
-        data: [0u8; (HEIGHT * WIDTH) as usize].to_vec(),
+        data: [0u8; (HEIGHT * WIDTH * 4) as usize].to_vec(),
         ..default()
     });
 
@@ -113,25 +114,26 @@ fn setup(
     cmd.spawn((
         Camera2dBundle {
             camera: Camera {
+                clear_color: ClearColorConfig::None,
                 order: -1,
                 target: image_handle.clone().into(),
+                hdr: false,
                 ..default()
             },
+            tonemapping: Tonemapping::None,
             ..default()
         },
         iter_pass_layer,
     ));
 
     // render world to screen
-    cmd.spawn((
-        MaterialMesh2dBundle {
-            mesh: rect_handle.into(),
-            material: render_materials.add(RenderMaterial {
-                texture: image_handle,
-            }),
-            ..default()
-        },
-    ));
+    cmd.spawn((MaterialMesh2dBundle {
+        mesh: rect_handle.into(),
+        material: render_materials.add(RenderMaterial {
+            texture: image_handle,
+        }),
+        ..default()
+    },));
 
     cmd.spawn((
         Camera2dBundle {
@@ -198,14 +200,22 @@ fn draw_life(
     mat.info.y *= -1.;
     mat.info.y += 300.;
 
-    // mat.info.w = if mouse.pressed(MouseButton::Left) {
-    //     cursor.size
-    // } else {
-    //     0.
-    // };
-    mat.info.w = 10.;
+    mat.info.w = if mouse.pressed(MouseButton::Left) {
+        cursor.size
+    } else {
+        0.
+    };
 
     mat.info.z = unsafe { mem::transmute_copy::<u32, f32>(&frame.0) };
+
+    let gradient = colorous::RAINBOW;
+    let col = gradient.eval_rational((frame.0 % 1000) as usize, 1000);
+    mat.draw_color = vec4(
+        col.r as f32 / 255.,
+        col.g as f32 / 255.,
+        col.b as f32 / 255.,
+        0.
+    );
 }
 
 /// Material to iterate life using fragment shader
@@ -217,6 +227,9 @@ pub struct LifeMaterial {
 
     #[uniform(2)]
     info: Vec4,
+
+    #[uniform(3)]
+    draw_color: Vec4,
 }
 
 impl Material2d for LifeMaterial {
@@ -234,6 +247,12 @@ impl Material2d for LifeMaterial {
     ) -> Result<(), SpecializedMeshPipelineError> {
         descriptor.vertex.entry_point = "main".into();
         descriptor.fragment.as_mut().unwrap().entry_point = "main".into();
+
+        if let Some(fragment) = &mut descriptor.fragment {
+            for target_state in &mut fragment.targets.iter_mut().flatten() {
+                target_state.blend = Some(BlendState::REPLACE);
+            }
+        }
         Ok(())
     }
 }
