@@ -11,9 +11,11 @@ layout(set = 2, binding = 2) uniform vec4 info; // for drawing
 
 layout(set = 2, binding = 3) uniform vec4 color; // for drawing
 
-// layout(set = 2, binding = 4) uniform vec2 viewport;
+// layout(set = 2, binding = 4) uniform vec2 canvas;
 
-const float cutoff = 0.5;
+const vec2 canvas = vec2(800., 600.);
+
+const float cutoff = 0.7;
 
 const int k = 0xDECAF;
 
@@ -27,16 +29,16 @@ int hash() {
 }
 
 vec4 v(float x, float y) {
-    vec4 col = texture(sampler2D(tex, samp), vec2(x, y) / vec2(800., 600.));
+    vec4 col = texture(sampler2D(tex, samp), vec2(x, y) / canvas);
 
     return (col.a >= cutoff) ? vec4(col.rgb, 1.) : vec4(0.);
 }
 
 vec4 neighborSum(float x, float y) {
-    float t = mod(y + 1, 600.);
-    float b = mod(y - 1, 600.);
-    float l = mod(x - 1, 800.);
-    float r = mod(x + 1, 800.);
+    float t = mod(y + 1, canvas.y);
+    float b = mod(y - 1, canvas.y);
+    float l = mod(x - 1, canvas.x);
+    float r = mod(x + 1, canvas.x);
 
     vec4 sum = v(l, t) + v(x, t) + v(r, t)
              + v(l, y) /*     */ + v(r, y)
@@ -46,10 +48,10 @@ vec4 neighborSum(float x, float y) {
 }
 
 void main() {
-    float x = gl_FragCoord.x;
-    float y = gl_FragCoord.y;
+    float x = mod(gl_FragCoord.x, canvas.x);
+    float y = mod(gl_FragCoord.y, canvas.y);
 
-    vec4 col = texture(sampler2D(tex, samp), vec2(x, y) / vec2(800., 600.));
+    vec4 col = texture(sampler2D(tex, samp), vec2(x, y) / canvas);
 
     vec4 curr = v(x, y);
     bool alive = curr.a == 1.;
@@ -72,7 +74,6 @@ void main() {
         o_Target.a = clamp(col.a - 0.005, 0.01, cutoff - 0.01);
     }
 
-
     // draw
     if (distance(vec2(x, y), info.xy) < info.w) {
         if (hash() > 0.0) {
@@ -80,8 +81,4 @@ void main() {
             o_Target.a = 1.0;
         }
     }
-    
-    o_Target.rg = fract(gl_FragCoord.xy);
-    o_Target.b = 0.;
-    o_Target.a = 1.0;
 }

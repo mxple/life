@@ -1,2 +1,8 @@
 /target
-/out
+out/assets
+out/*.wasm
+out/life.js
+
+life
+*.trace
+*.rdc

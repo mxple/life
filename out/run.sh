@@ -1,0 +1,1 @@
+WASM_SERVER_RUNNER_CUSTOM_INDEX_HTML=index.html wasm-server-runner life_bg.wasm

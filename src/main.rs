@@ -9,9 +9,14 @@ use bevy::{
     math::{vec2, vec3, vec4},
     prelude::*,
     render::{
-        mesh::MeshVertexBufferLayoutRef, render_resource::{
-            AsBindGroup, BlendState, Extent3d, RenderPipelineDescriptor, SamplerDescriptor, ShaderRef, SpecializedMeshPipelineError, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages
-        }, texture::{ImageSampler, ImageSamplerDescriptor}, view::RenderLayers
+        mesh::MeshVertexBufferLayoutRef,
+        render_resource::{
+            AsBindGroup, BlendState, Extent3d, RenderPipelineDescriptor, SamplerDescriptor,
+            ShaderRef, SpecializedMeshPipelineError, TextureDescriptor, TextureDimension,
+            TextureFormat, TextureUsages,
+        },
+        texture::{ImageSampler, ImageSamplerDescriptor},
+        view::RenderLayers,
     },
     sprite::{Material2d, Material2dKey, Material2dPlugin, MaterialMesh2dBundle},
     window::{PresentMode, WindowResized},
@@ -33,6 +38,8 @@ fn main() {
         size: 10.,
         ..default()
     });
+
+    app.insert_resource(Msaa::Off);
 
     app.add_plugins((
         DefaultPlugins
@@ -211,7 +218,7 @@ fn draw_life(
         col.r as f32 / 255.,
         col.g as f32 / 255.,
         col.b as f32 / 255.,
-        0.
+        0.,
     );
 }
 

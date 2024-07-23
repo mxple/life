@@ -10,8 +10,6 @@ layout(set = 2, binding = 1) uniform sampler samp;
 void main() {
 	vec4 col = texture(sampler2D(tex, samp), v_Uv);
 
-	o_Target.rgb = mix(col.rgb/16., col.rgb, col.a);
+	o_Target.rgb = mix(col.rgb/6., col.rgb, col.a);
 	o_Target.a = 1.0;
-
-	o_Target = col;
 }
