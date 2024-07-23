@@ -11,7 +11,9 @@ layout(set = 2, binding = 2) uniform vec4 info; // for drawing
 
 layout(set = 2, binding = 3) uniform vec4 color; // for drawing
 
-const float cutoff = 0.95;
+// layout(set = 2, binding = 4) uniform vec2 viewport;
+
+const float cutoff = 0.5;
 
 const int k = 0xDECAF;
 
@@ -45,7 +47,7 @@ vec4 neighborSum(float x, float y) {
 
 void main() {
     float x = gl_FragCoord.x;
-    float y = mod(gl_FragCoord.y, 600.);
+    float y = gl_FragCoord.y;
 
     vec4 col = texture(sampler2D(tex, samp), vec2(x, y) / vec2(800., 600.));
 
@@ -70,11 +72,16 @@ void main() {
         o_Target.a = clamp(col.a - 0.005, 0.01, cutoff - 0.01);
     }
 
+
     // draw
-    if (distance(gl_FragCoord.xy, info.xy) < info.w) {
+    if (distance(vec2(x, y), info.xy) < info.w) {
         if (hash() > 0.0) {
             o_Target.rgb = color.rgb;
             o_Target.a = 1.0;
         }
     }
+    
+    o_Target.rg = fract(gl_FragCoord.xy);
+    o_Target.b = 0.;
+    o_Target.a = 1.0;
 }

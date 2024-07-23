@@ -12,4 +12,6 @@ void main() {
 
 	o_Target.rgb = mix(col.rgb/16., col.rgb, col.a);
 	o_Target.a = 1.0;
+
+	o_Target = col;
 }

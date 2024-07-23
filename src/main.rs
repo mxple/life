@@ -6,19 +6,15 @@ use bevy::{
     core::FrameCount,
     core_pipeline::tonemapping::Tonemapping,
     diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
-    math::{vec3, vec4},
+    math::{vec2, vec3, vec4},
     prelude::*,
     render::{
-        mesh::MeshVertexBufferLayoutRef,
-        render_resource::{
-            AsBindGroup, BlendState, Extent3d, RenderPipelineDescriptor, ShaderRef,
-            SpecializedMeshPipelineError, TextureDescriptor, TextureDimension, TextureFormat,
-            TextureUsages,
-        },
-        view::RenderLayers,
+        mesh::MeshVertexBufferLayoutRef, render_resource::{
+            AsBindGroup, BlendState, Extent3d, RenderPipelineDescriptor, SamplerDescriptor, ShaderRef, SpecializedMeshPipelineError, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages
+        }, texture::{ImageSampler, ImageSamplerDescriptor}, view::RenderLayers
     },
     sprite::{Material2d, Material2dKey, Material2dPlugin, MaterialMesh2dBundle},
-    window::PresentMode,
+    window::{PresentMode, WindowResized},
 };
 
 const WIDTH: u32 = 800;
@@ -92,6 +88,7 @@ fn setup(
                 | TextureUsages::RENDER_ATTACHMENT,
             view_formats: &[],
         },
+        sampler: ImageSampler::nearest(),
         data: [0u8; (HEIGHT * WIDTH * 4) as usize].to_vec(),
         ..default()
     });
@@ -218,6 +215,25 @@ fn draw_life(
     );
 }
 
+fn update_viewport_size(
+    query: Query<&Handle<LifeMaterial>>,
+    mut materials: ResMut<Assets<LifeMaterial>>,
+    mut resize_reader: EventReader<WindowResized>,
+) {
+    let Ok(handle) = query.get_single() else {
+        return;
+    };
+
+    let Some(mat) = materials.get_mut(handle) else {
+        println!("Material not found");
+        return;
+    };
+
+    for e in resize_reader.read() {
+        mat.viewport = vec2(e.width, e.height);
+    }
+}
+
 /// Material to iterate life using fragment shader
 #[derive(Asset, TypePath, AsBindGroup, Debug, Clone, Default)]
 pub struct LifeMaterial {
@@ -230,6 +246,9 @@ pub struct LifeMaterial {
 
     #[uniform(3)]
     draw_color: Vec4,
+
+    #[uniform(4)]
+    viewport: Vec2,
 }
 
 impl Material2d for LifeMaterial {
