@@ -17,7 +17,6 @@ bevy = { version = "0.14.0", default-features = false, features = [
     "x11",
     "bevy_gizmos",
     "default_font",
-    "webgl2",
     "shader_format_glsl"
 ] }
 colorous = "1.0.14"
@@ -25,10 +24,7 @@ colorous = "1.0.14"
 [features]
 webgl2 = ["bevy/webgl2"]
 
-[target.wasm32-unknown-unknown]
-[profile.wasm-release]
-inherits = "release"
-
-opt-level = "z"
-# lto = "fat"
+[profile.release]
+opt-level = 'z'
+lto = true
 codegen-units = 1

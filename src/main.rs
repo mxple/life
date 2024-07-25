@@ -22,8 +22,8 @@ use bevy::{
     window::{PresentMode, WindowResized},
 };
 
-const WIDTH: u32 = 800;
-const HEIGHT: u32 = 600;
+const WIDTH: u32 = 1600;
+const HEIGHT: u32 = 900;
 
 #[derive(Resource, Default)]
 struct Cursor {
@@ -200,9 +200,9 @@ fn draw_life(
     mat.info.x = cursor.pos.x;
     mat.info.y = cursor.pos.y;
 
-    mat.info.x += 400.;
+    mat.info.x += (WIDTH / 2) as f32;
     mat.info.y *= -1.;
-    mat.info.y += 300.;
+    mat.info.y += (HEIGHT / 2) as f32;
 
     mat.info.w = if mouse.pressed(MouseButton::Left) {
         cursor.size

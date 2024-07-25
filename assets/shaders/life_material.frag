@@ -13,7 +13,7 @@ layout(set = 2, binding = 3) uniform vec4 color; // for drawing
 
 // layout(set = 2, binding = 4) uniform vec2 canvas;
 
-const vec2 canvas = vec2(800., 600.);
+const vec2 canvas = vec2(1600., 900.);
 
 const float cutoff = 0.7;
 
